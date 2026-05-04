@@ -7,7 +7,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view()),
     path('me/', AuthMe.as_view()),
 
-    path('send-otp/', SendOTPView.as_view()),
+    # path('send-otp/', SendOTPView.as_view()),
     path('verify-otp/', VerifyOTPView.as_view()),
     path('reset-password/', ResetPasswordView.as_view()),
 

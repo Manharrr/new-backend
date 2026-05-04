@@ -23,10 +23,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         if len(value) < 6:
             raise serializers.ValidationError("Password too short")
-        if not re.search(r'[A-Z]', value):
-            raise serializers.ValidationError("Must contain uppercase letter")
-        if not re.search(r'[0-9]', value):
-            raise serializers.ValidationError("Must contain number")
+        
         return value
 
 
@@ -36,13 +33,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'email', 'role', 'is_staff')
 
 
-class SendOTPSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+# class SendOTPSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
 
-    def validate_email(self, value):
-        if not User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError("User not found")
-        return value
+#     def validate_email(self, value):
+#         if not User.objects.filter(email__iexact=value).exists():
+#             raise serializers.ValidationError("User not found")
+#         return value
 
 
 class VerifyOTPSerializer(serializers.Serializer):

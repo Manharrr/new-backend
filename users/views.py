@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 import random
-
 from .models import UserToken, PasswordResetOTP
 from .serializers import (
     RegisterSerializer,
@@ -14,6 +13,9 @@ from .serializers import (
     VerifyOTPSerializer,
     ResetPasswordSerializer
 )
+
+from django.core.mail import send_mail
+from django.conf import settings
 
 User = get_user_model()
 
@@ -30,13 +32,35 @@ class RegisterView(APIView):
         otp = str(random.randint(100000, 999999))
         PasswordResetOTP.objects.create(user=user, otp=otp)
 
-        return Response({"message": "User registered. OTP sent"}, status=201)
+        send_mail(
+            subject="V Perfume - OTP Verification",
+            message=f"""
+Hello {user.name},
+
+Thank you for registering with V Perfume.
+
+Your OTP for account verification is: {otp}
+
+This OTP is valid for 5 minutes.
+
+If you did not request this, please ignore this email.
+
+Regards,
+V Perfume Team
+""",
+            from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        return Response({"message": "User registered. OTP sent"}, status=status.HTTP_201_CREATED)
+
 
 
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get("email")
-        password = request.data.get("password")
+        password = str(request.data.get("password"))
 
         user = User.objects.filter(email=email).first()
 
@@ -78,19 +102,19 @@ class AuthMe(APIView):
         return Response(UserSerializer(request.user).data)
 
 
-class SendOTPView(APIView):
-    def post(self, request):
-        serializer = SendOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+# class SendOTPView(APIView):
+#     def post(self, request):
+#         serializer = SendOTPSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
 
-        user = User.objects.get(email=serializer.validated_data["email"])
+#         user = User.objects.get(email=serializer.validated_data["email"])
 
-        PasswordResetOTP.objects.filter(user=user).delete()
+#         PasswordResetOTP.objects.filter(user=user).delete()
 
-        otp = str(random.randint(100000, 999999))
-        PasswordResetOTP.objects.create(user=user, otp=otp)
+#         otp = str(random.randint(100000, 999999))
+#         PasswordResetOTP.objects.create(user=user, otp=otp)
 
-        return Response({"message": "OTP sent"})
+#         return Response({"message": "OTP sent"})
 
 
 class VerifyOTPView(APIView):
@@ -116,8 +140,8 @@ class VerifyOTPView(APIView):
             otp_obj.save()
             return Response({"error": "Invalid OTP"}, status=400)
 
-        otp_obj.is_verified = True
-        otp_obj.save()
+        user.is_active = True
+        user.save()
 
         return Response({"message": "OTP verified"})
 
@@ -155,32 +179,32 @@ class ProfileUpdateView(APIView):
         return Response({"message": "Profile updated"})
 
 
-class VerifyAccountView(APIView):
-    def post(self, request):
-        serializer = VerifyOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+# class VerifyAccountView(APIView):
+#     def post(self, request):
+#         serializer = VerifyOTPSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data["email"]
-        otp = serializer.validated_data["otp"]
+#         email = serializer.validated_data["email"]
+#         otp = serializer.validated_data["otp"]
 
-        user = User.objects.get(email=email)
-        otp_obj = PasswordResetOTP.objects.get(user=user)
+#         user = User.objects.get(email=email)
+#         otp_obj = PasswordResetOTP.objects.get(user=user)
 
-        if otp_obj.attempts >= 3:
-            return Response({"error": "Too many attempts"}, status=400)
+#         if otp_obj.attempts >= 3:
+#             return Response({"error": "Too many attempts"}, status=400)
 
-        if otp_obj.otp != otp:
-            otp_obj.attempts += 1
-            otp_obj.save()
-            return Response({"error": "Invalid OTP"}, status=400)
+#         if otp_obj.otp != otp:
+#             otp_obj.attempts += 1
+#             otp_obj.save()
+#             return Response({"error": "Invalid OTP"}, status=400)
 
-        otp_obj.is_verified = True
-        otp_obj.save()
+#         otp_obj.is_verified = True
+#         otp_obj.save()
 
-        user.is_active = True
-        user.save()
+#         user.is_active = True
+#         user.save()
 
-        return Response({"message": "Account verified"})
+#         return Response({"message": "Account verified"})
 
 # from django.shortcuts import render
 # from rest_framework .views import APIView
