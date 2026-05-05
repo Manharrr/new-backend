@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Brand, Category, Perfume, PerfumeVariant, Review
+from .models import Brand, Category, Perfume, Review
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -14,21 +14,17 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PerfumeVariantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PerfumeVariant
-        fields = "__all__"
-
-
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = "__all__"
+        read_only_fields = ['user']
 
 
 class PerfumeSerializer(serializers.ModelSerializer):
-    variants = PerfumeVariantSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
+    brand = BrandSerializer(read_only=True)     
+    category = CategorySerializer(read_only=True)  
 
     class Meta:
         model = Perfume

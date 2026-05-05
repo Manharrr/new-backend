@@ -5,21 +5,21 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 import random
+from django.core.mail import send_mail
+from django.conf import settings
+
 from .models import UserToken, PasswordResetOTP
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
-    SendOTPSerializer,
     VerifyOTPSerializer,
     ResetPasswordSerializer
 )
 
-from django.core.mail import send_mail
-from django.conf import settings
-
 User = get_user_model()
 
 
+# 🔹 REGISTER
 class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -34,29 +34,15 @@ class RegisterView(APIView):
 
         send_mail(
             subject="V Perfume - OTP Verification",
-            message=f"""
-Hello {user.name},
-
-Thank you for registering with V Perfume.
-
-Your OTP for account verification is: {otp}
-
-This OTP is valid for 5 minutes.
-
-If you did not request this, please ignore this email.
-
-Regards,
-V Perfume Team
-""",
+            message=f"Your OTP is {otp}",
             from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
             recipient_list=[user.email],
-            fail_silently=False,
         )
 
-        return Response({"message": "User registered. OTP sent"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "User registered. OTP sent"})
 
 
-
+# 🔹 LOGIN
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -71,30 +57,40 @@ class LoginView(APIView):
             return Response({"error": "Account not verified"}, status=403)
 
         refresh = RefreshToken.for_user(user)
-        access = str(refresh.access_token)
 
+        UserToken.objects.filter(user=user).delete()
         token_obj = UserToken(user=user)
-        token_obj.set_token(access)
+        token_obj.set_token(str(refresh.access_token))
         token_obj.save()
 
-        return Response({"access": access, "refresh": str(refresh)})
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        })
 
 
+# 🔹 LOGOUT
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         refresh_token = request.data.get("refresh")
 
+        if not refresh_token:
+            return Response({"error": "Refresh token required"}, status=400)
+
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
+
             UserToken.objects.filter(user=request.user).delete()
+
             return Response({"message": "Logged out"})
         except:
             return Response({"error": "Invalid token"}, status=400)
 
 
+# 🔹 AUTH ME
 class AuthMe(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -102,21 +98,7 @@ class AuthMe(APIView):
         return Response(UserSerializer(request.user).data)
 
 
-# class SendOTPView(APIView):
-#     def post(self, request):
-#         serializer = SendOTPSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-
-#         user = User.objects.get(email=serializer.validated_data["email"])
-
-#         PasswordResetOTP.objects.filter(user=user).delete()
-
-#         otp = str(random.randint(100000, 999999))
-#         PasswordResetOTP.objects.create(user=user, otp=otp)
-
-#         return Response({"message": "OTP sent"})
-
-
+# 🔹 VERIFY OTP (REGISTER + FORGOT)
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
@@ -125,20 +107,26 @@ class VerifyOTPView(APIView):
         email = serializer.validated_data["email"]
         otp = serializer.validated_data["otp"]
 
-        user = User.objects.get(email=email)
-        otp_obj = PasswordResetOTP.objects.get(user=user)
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+        otp_obj = PasswordResetOTP.objects.filter(user=user).first()
+        if not otp_obj:
+            return Response({"error": "OTP not found"}, status=400)
 
         if otp_obj.is_expired():
             otp_obj.delete()
             return Response({"error": "OTP expired"}, status=400)
 
-        if not otp_obj.can_retry():
-            return Response({"error": "Too many attempts"}, status=400)
-
         if otp_obj.otp != otp:
             otp_obj.attempts += 1
             otp_obj.save()
             return Response({"error": "Invalid OTP"}, status=400)
+
+        # ✅ IMPORTANT FIX
+        otp_obj.is_verified = True
+        otp_obj.save()
 
         user.is_active = True
         user.save()
@@ -146,6 +134,31 @@ class VerifyOTPView(APIView):
         return Response({"message": "OTP verified"})
 
 
+# 🔹 FORGOT PASSWORD (SEND OTP)
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+        PasswordResetOTP.objects.filter(user=user).delete()
+
+        otp = str(random.randint(100000, 999999))
+        PasswordResetOTP.objects.create(user=user, otp=otp)
+
+        send_mail(
+            subject="V Perfume - Reset Password",
+            message=f"Your OTP is {otp}",
+            from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+            recipient_list=[user.email],
+        )
+
+        return Response({"message": "OTP sent"})
+
+
+# 🔹 RESET PASSWORD
 class ResetPasswordView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
@@ -154,8 +167,17 @@ class ResetPasswordView(APIView):
         email = serializer.validated_data["email"]
         password = serializer.validated_data["password"]
 
-        user = User.objects.get(email=email)
-        otp_obj = PasswordResetOTP.objects.get(user=user, is_verified=True)
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+        otp_obj = PasswordResetOTP.objects.filter(
+            user=user,
+            is_verified=True
+        ).first()
+
+        if not otp_obj:
+            return Response({"error": "OTP not verified"}, status=400)
 
         user.set_password(password)
         user.save()
@@ -165,21 +187,196 @@ class ResetPasswordView(APIView):
         return Response({"message": "Password reset successful"})
 
 
+# 🔹 CHANGE PASSWORD (LOGGED IN)
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        # 🔹 Check fields
+        if not old_password or not new_password or not confirm_password:
+            return Response({"error": "All fields are required"}, status=400)
+
+        # 🔹 Check old password
+        if not user.check_password(str(old_password)):
+            return Response({"error": "Old password incorrect"}, status=400)
+
+        # 🔹 Match new passwords
+        if new_password != confirm_password:
+            return Response({"error": "Passwords do not match"}, status=400)
+
+        # 🔹 Validate length
+        if len(new_password) < 6:
+            return Response({"error": "Password too short"}, status=400)
+
+        # 🔹 Set new password
+        user.set_password(str(new_password))
+        user.save()
+
+        return Response({"message": "Password changed successfully"})
+
+# 🔹 PROFILE UPDATE
 class ProfileUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
         user = request.user
-        name = request.data.get("name")
 
+        name = request.data.get("name")
+        email = request.data.get("email")
+
+        # 🔹 Update name
         if name:
             user.name = name
-            user.save()
 
-        return Response({"message": "Profile updated"})
+        # 🔹 Update email (with check)
+        if email:
+            if User.objects.filter(email=email).exclude(id=user.id).exists():
+                return Response({"error": "Email already exists"}, status=400)
+            user.email = email
+
+        user.save()
+
+        return Response({
+            "message": "Profile updated",
+            "data": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email
+            }
+        })
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from django.contrib.auth import get_user_model
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework_simplejwt.tokens import RefreshToken
+# import random
+# from .models import UserToken, PasswordResetOTP
+# from .serializers import (
+#     RegisterSerializer,
+#     UserSerializer,
+#     SendOTPSerializer,
+#     VerifyOTPSerializer,
+#     ResetPasswordSerializer
+# )
+
+# from django.core.mail import send_mail
+# from django.conf import settings
+
+# User = get_user_model()
 
 
-# class VerifyAccountView(APIView):
+# class RegisterView(APIView):
+#     def post(self, request):
+#         serializer = RegisterSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         user = serializer.save()
+#         user.is_active = False
+#         user.save()
+
+#         otp = str(random.randint(100000, 999999))
+#         PasswordResetOTP.objects.create(user=user, otp=otp)
+
+#         send_mail(
+#             subject="V Perfume - OTP Verification",
+#             message=f"""
+# Hello {user.name},
+
+# Thank you for registering with V Perfume.
+
+# Your OTP for account verification is: {otp}
+
+# This OTP is valid for 5 minutes.
+
+# If you did not request this, please ignore this email.
+
+# Regards,
+# V Perfume Team
+# """,
+#             from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+#             recipient_list=[user.email],
+#             fail_silently=False,
+#         )
+
+#         return Response({"message": "User registered. OTP sent"}, status=status.HTTP_201_CREATED)
+
+
+
+# class LoginView(APIView):
+#     def post(self, request):
+#         email = request.data.get("email")
+#         password = str(request.data.get("password"))
+
+#         user = User.objects.filter(email=email).first()
+
+#         if not user or not user.check_password(password):
+#             return Response({"error": "Invalid credentials"}, status=401)
+
+#         if not user.is_active:
+#             return Response({"error": "Account not verified"}, status=403)
+
+#         refresh = RefreshToken.for_user(user)
+#         access = str(refresh.access_token)
+
+#         token_obj = UserToken(user=user)
+#         token_obj.set_token(access)
+#         token_obj.save()
+
+#         return Response({"access": access, "refresh": str(refresh)})
+
+
+
+# class LogoutView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         refresh_token = request.data.get("refresh")
+
+#         if not refresh_token:
+#             return Response({"error": "Refresh token required"}, status=400)
+
+#         try:
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+
+#             UserToken.objects.filter(user=request.user).delete()
+
+#             return Response({"message": "Logged out"}, status=200)
+
+#         except Exception as e:
+#             return Response({"error": "Invalid token"}, status=400)
+
+# class AuthMe(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         return Response(UserSerializer(request.user).data)
+
+
+# # class SendOTPView(APIView):
+# #     def post(self, request):
+# #         serializer = SendOTPSerializer(data=request.data)
+# #         serializer.is_valid(raise_exception=True)
+
+# #         user = User.objects.get(email=serializer.validated_data["email"])
+
+# #         PasswordResetOTP.objects.filter(user=user).delete()
+
+# #         otp = str(random.randint(100000, 999999))
+# #         PasswordResetOTP.objects.create(user=user, otp=otp)
+
+# #         return Response({"message": "OTP sent"})
+
+
+# class VerifyOTPView(APIView):
 #     def post(self, request):
 #         serializer = VerifyOTPSerializer(data=request.data)
 #         serializer.is_valid(raise_exception=True)
@@ -190,7 +387,11 @@ class ProfileUpdateView(APIView):
 #         user = User.objects.get(email=email)
 #         otp_obj = PasswordResetOTP.objects.get(user=user)
 
-#         if otp_obj.attempts >= 3:
+#         if otp_obj.is_expired():
+#             otp_obj.delete()
+#             return Response({"error": "OTP expired"}, status=400)
+
+#         if not otp_obj.can_retry():
 #             return Response({"error": "Too many attempts"}, status=400)
 
 #         if otp_obj.otp != otp:
@@ -198,242 +399,109 @@ class ProfileUpdateView(APIView):
 #             otp_obj.save()
 #             return Response({"error": "Invalid OTP"}, status=400)
 
-#         otp_obj.is_verified = True
-#         otp_obj.save()
-
 #         user.is_active = True
 #         user.save()
 
-#         return Response({"message": "Account verified"})
-
-# from django.shortcuts import render
-# from rest_framework .views import APIView
-# from rest_framework.response import Response
-# from rest_framework import status
-# from django.contrib.auth import get_user_model
-# from rest_framework.permissions import IsAuthenticated
-# from rest_framework_simplejwt .tokens import RefreshToken
-# from .models import UserToken
-# from .serializers import RegisterSerializer,UserSerializer,sendOTpSerilaizer,ResetPasswordSerializer
-# from .models import PasswordResetOTP
-# import random
-# from django.core.mail import send_mail
-# from .permissions import IsAdmin
-
-
-
-# User=get_user_model()
-
-
-# class RegisterView(APIView):
-#     def post(self, request):
-#         serializer = RegisterSerializer(data=request.data)
-
-#         if serializer.is_valid():
-#             user = serializer.save()
-
-#             # 🔥 generate OTP
-#             otp = str(random.randint(100000, 999999))
-
-#             PasswordResetOTP.objects.create(
-#                 user=user,
-#                 otp=otp
-#             )
-
-#             # 🔥 send email
-#             send_mail(
-#                 "Verify your account",
-#                 f"Your OTP is {otp}",
-#                 "yourgmail@gmail.com",
-#                 [user.email],
-#             )
-
-#             return Response({"message": "User registered. OTP sent."}, status=201)
-
-#         return Response(serializer.errors, status=400)
-
-# class LoginView(APIView):
-#     def post(self, request):
-#         email = request.data.get("email")
-#         password = request.data.get("password")
-
-#         user = User.objects.filter(email=email).first()
-
-#         if user and user.check_password(password):
-#             refresh = RefreshToken.for_user(user)
-#             access = str(refresh.access_token)
-
-#             # 🔥 store access token
-#             UserToken.objects.create(
-#                 user=user,
-#                 access_token=access
-#             )
-
-#             return Response({
-#                 "access": access,
-#                 "refresh": str(refresh),
-#             })
-
-#         return Response({"error": "Invalid credentials"}, status=401)
-
-
-# class LogoutView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         try:
-#             refresh_token = request.data["refresh"]
-#             token = RefreshToken(refresh_token)
-
-#             # blacklist refresh token
-#             token.blacklist()
-
-#             # 🔥 delete access token
-#             auth = request.headers.get("Authorization")
-#             if not auth or " " not in auth:
-#                 return Response({"error": "No token"}, status=400)
-
-#             access = auth.split(" ")[1]
-#             UserToken.objects.filter(access_token=access).delete()
-
-#             return Response({"message": "Logged out"})
-#         except:
-#             return Response({"error": "Invalid token"}, status=400)
-
-# class AuthMe(APIView):
-#     permission_classes=[IsAuthenticated]
-#     def get(self,request):
-#         serializer=UserSerializer(request.user)
-#         return Response(serializer.data)
-    
-
-# class SentotpView(APIView):
-#     def post(self,request):
-#         serializer=sendOTpSerilaizer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-
-#         email=serializer.validated_data['email']
-#         try:
-#             user=User.objects.get(email=email)
-#         except User.DoesNotExist:
-#             return Response({"error":"Email not register"},status=400)
-        
-#         otp = str(random.randint(100000, 999999))
-#         PasswordResetOTP.objects.filter(user=user).delete()
-
-#         PasswordResetOTP.objects.create(
-#             user=user,
-#             otp=otp
-#         )
-
-#         send_mail(
-#             "Password Reset OTP",
-#             f"Your OTP is {otp}. Valid for 5 minutes.",
-#             "noreply@example.com",
-#             [email],
-#         )
-
-#         return Response({"message": "OTP sent successfully"}, status=200)
-    
-
-# from datetime import timedelta
-# from django.utils import timezone
-
-# class VerifyOTPView(APIView):
-#     def post(self, request):
-#         email = request.data.get("email")
-#         otp = request.data.get("otp")
-
-#         try:
-#             user = User.objects.get(email=email)
-#             otp_obj =PasswordResetOTP.objects.get(user=user, otp=otp)
-#         except:
-#             return Response({"error": "Invalid OTP"}, status=400)
-
-#         if timezone.now() > otp_obj.created_at + timedelta(minutes=5):
-#             otp_obj.delete()
-#             return Response({"error": "OTP expired"}, status=400)
-
-#         otp_obj.is_verified = True
-#         otp_obj.save()
-
 #         return Response({"message": "OTP verified"})
-    
+
 
 # class ResetPasswordView(APIView):
 #     def post(self, request):
-#         email = request.data.get("email")
-#         new_password = request.data.get("password")
+#         serializer = ResetPasswordSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
 
-#         try:
-#             user = User.objects.get(email=email)
-#             otp_obj = PasswordResetOTP.objects.get(user=user, is_verified=True)
-#         except:
-#             return Response({"error": "OTP not verified"}, status=400)
+#         email = serializer.validated_data["email"]
+#         password = serializer.validated_data["password"]
 
-#         user.set_password(new_password)
+#         user = User.objects.get(email=email)
+#         otp_obj = PasswordResetOTP.objects.get(user=user, is_verified=True)
+
+#         user.set_password(password)
 #         user.save()
 
 #         otp_obj.delete()
 
 #         return Response({"message": "Password reset successful"})
-    
+
 
 # class ProfileUpdateView(APIView):
 #     permission_classes = [IsAuthenticated]
 
 #     def put(self, request):
 #         user = request.user
-
 #         name = request.data.get("name")
+
 #         if name:
 #             user.name = name
-
-#         user.save()
+#             user.save()
 
 #         return Response({"message": "Profile updated"})
-    
-# class VerifyAccountView(APIView):
+
+# class ChangePasswordView(APIView):
+#     permission_classes = [IsAuthenticated]
+
 #     def post(self, request):
-#         email = request.data.get("email")
-#         otp = request.data.get("otp")
+#         user = request.user
+#         old_password = request.data.get("old_password")
+#         new_password = request.data.get("new_password")
 
-#         try:
-#             user = User.objects.get(email=email)
-#             otp_obj = PasswordResetOTP.objects.get(user=user)
-#         except User.DoesNotExist:
-#             return Response({"error": "Invalid email"}, status=400)
-#         except PasswordResetOTP.DoesNotExist:
-#             return Response({"error": "No OTP found"}, status=400)
+#         if not user.check_password(str(old_password)):
+#             return Response({"error": "Old password incorrect"}, status=400)
 
-#         # 🔥 ADD THIS HERE (attempt check)
-#         if otp_obj.attempts >= 3:
-#             return Response({"error": "Too many attempts"}, status=400)
-
-#         # 🔥 ADD THIS HERE (wrong OTP)
-#         if otp_obj.otp != otp:
-#             otp_obj.attempts += 1
-#             otp_obj.save()
-#             return Response({"error": "Invalid OTP"}, status=400)
-
-#         # ✅ success
-#         otp_obj.is_verified = True
-#         otp_obj.save()
-
-#         user.is_active = True
+#         user.set_password(str(new_password))
 #         user.save()
 
-#         return Response({"message": "Account verified"})
+#         return Response({"message": "Password changed successfully"})
+# class ForgotPasswordView(APIView):
+#     def post(self, request):
+#         email = request.data.get("email")
+
+#         user = User.objects.filter(email=email).first()
+#         if not user:
+#             return Response({"error": "User not found"}, status=404)
+
+#         PasswordResetOTP.objects.filter(user=user).delete()
+
+#         otp = str(random.randint(100000, 999999))
+#         PasswordResetOTP.objects.create(user=user, otp=otp)
+
+#         send_mail(
+#             subject="V Perfume - Password Reset OTP",
+#             message=f"""
+# Hello {user.name},
+
+# Your OTP for password reset is: {otp}
+
+# This OTP is valid for 5 minutes.
+
+# Regards,
+# V Perfume Team
+# """,
+#             from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+#             recipient_list=[user.email],
+#             fail_silently=False,
+#         )
+
+#         return Response({"message": "OTP sent"})
+
 
 # # class VerifyAccountView(APIView):
 # #     def post(self, request):
-# #         email = request.data.get("email")
-# #         otp = request.data.get("otp")
+# #         serializer = VerifyOTPSerializer(data=request.data)
+# #         serializer.is_valid(raise_exception=True)
 
-# #         try:
-# #             user = User.objects.get(email=email)
-# #             otp_obj = PasswordResetOTP.objects.get(user=user, otp=otp)
-# #         except:
+# #         email = serializer.validated_data["email"]
+# #         otp = serializer.validated_data["otp"]
+
+# #         user = User.objects.get(email=email)
+# #         otp_obj = PasswordResetOTP.objects.get(user=user)
+
+# #         if otp_obj.attempts >= 3:
+# #             return Response({"error": "Too many attempts"}, status=400)
+
+# #         if otp_obj.otp != otp:
+# #             otp_obj.attempts += 1
+# #             otp_obj.save()
 # #             return Response({"error": "Invalid OTP"}, status=400)
 
 # #         otp_obj.is_verified = True
