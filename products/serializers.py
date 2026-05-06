@@ -23,7 +23,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class PerfumeSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
-    brand = BrandSerializer(read_only=True)     
+    brand = BrandSerializer(read_only=True)      
     category = CategorySerializer(read_only=True)  
 
     class Meta:

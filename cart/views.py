@@ -1,87 +1,65 @@
-# from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import IsAuthenticated
+from .models import Cart, CartItem
+from .serializers import CartItemSerializer
 
 
+class UserCartView(APIView):
+    permission_classes = [IsAuthenticated]
 
-# class AddToCartAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
+    def get(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        items = cart.items.all()
+        serializer = CartItemSerializer(items, many=True)
+        return Response(serializer.data)
 
-#     def post(self, request):
-#         user = request.user
-#         variant_id = request.data.get('variant')
 
-#         try:
-#             quantity = int(request.data.get('quantity', 1))
-#         except:
-#             return Response({"error": "Invalid quantity"})
+class AddToCart(APIView):
+    permission_classes = [IsAuthenticated]
 
-#         try:
-#             variant = PerfumeVariant.objects.get(id=variant_id)
-#         except PerfumeVariant.DoesNotExist:
-#             return Response({"error": "Variant not found"})
+    def post(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
 
-#         if quantity <= 0:
-#             return Response({"error": "Invalid quantity"})
+        perfume_id = request.data.get("perfume")
+        quantity = int(request.data.get("quantity", 1))
 
-#         cart, _ = Cart.objects.get_or_create(user=user)
+        item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            perfume_id=perfume_id
+        )
 
-#         item, created = CartItem.objects.get_or_create(
-#             cart=cart,
-#             variant=variant
-#         )
+        if not created:
+            item.quantity += quantity
+        else:
+            item.quantity = quantity
 
-#         new_quantity = item.quantity + quantity if not created else quantity
+        item.save()
 
-#         if new_quantity > variant.stock:
-#             return Response({"error": "Out of stock"})
+        return Response({"msg": "Added to cart"})
 
-#         item.quantity = new_quantity
-#         item.save()
 
-#         return Response({"msg": "Added to cart"})
-    
-# class UpdateCartItemAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
+class UpdateCart(APIView):
+    permission_classes = [IsAuthenticated]
 
-#     def patch(self, request, pk):
-#         try:
-#             item = CartItem.objects.get(
-#                 pk=pk,
-#                 cart__user=request.user
-#             )
-#         except CartItem.DoesNotExist:
-#             return Response({"error": "Item not found"})
+    def put(self, request, item_id):
+        try:
+            item = CartItem.objects.get(id=item_id, cart__user=request.user)
+            item.quantity = int(request.data.get("quantity", item.quantity))
+            item.save()
+            return Response({"msg": "Updated"})
+        except CartItem.DoesNotExist:
+            return Response({"error": "Item not found"}, status=404)
 
-#         try:
-#             quantity = int(request.data.get('quantity'))
-#         except:
-#             return Response({"error": "Invalid quantity"})
 
-#         if quantity <= 0:
-#             return Response({"error": "Invalid quantity"})
+class DeleteCart(APIView):
+    permission_classes = [IsAuthenticated]
 
-#         if quantity > item.variant.stock:
-#             return Response({"error": "Out of stock"})
-
-#         item.quantity = quantity
-#         item.save()
-
-#         return Response({"msg": "Updated"})
-
-# class RemoveCartItemAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def delete(self, request, pk):
-#         try:
-#             item = CartItem.objects.get(
-#                 pk=pk,
-#                 cart__user=request.user
-#             )
-#         except CartItem.DoesNotExist:
-#             return Response({"error": "Item not found"})
-
-#         item.delete()
-#         return Response({"msg": "Removed"})
+    def delete(self, request, item_id):
+        try:
+            item = CartItem.objects.get(id=item_id, cart__user=request.user)
+            item.delete()
+            return Response({"msg": "Deleted"})
+        except CartItem.DoesNotExist:
+            return Response({"error": "Item not found"}, status=404)

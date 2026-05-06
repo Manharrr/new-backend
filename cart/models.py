@@ -1,50 +1,25 @@
-# from django.db import models
-# from django.contrib.auth import get_user_model
+from django.db import models
+from django.contrib.auth import get_user_model
+from products.models import Perfume
 
-# User = get_user_model()
-
-
-# class Cart(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f"Cart - {self.user}"
+User = get_user_model()
 
 
-# class CartItem(models.Model):
-#     cart = models.ForeignKey(
-#         Cart,
-#         on_delete=models.CASCADE,
-#         related_name='items'
-#     )
-#     variant = models.ForeignKey(
-#         PerfumeVariant,
-#         on_delete=models.CASCADE
-#     )
-#     quantity = models.PositiveIntegerField(default=1)
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-#     class Meta:
-#         unique_together = ['cart', 'variant']  # prevents duplicate items
+    def __str__(self):
+        return self.user.email
 
-#     def __str__(self):
-#         return f"{self.variant} x {self.quantity}"
 
-# # from django.db import models
-# # from django.contrib.auth import get_user_model
-# # User = get_user_model()
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
+    perfume = models.ForeignKey(Perfume, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
 
-# # # Create your models here.
+    class Meta:
+        unique_together = ['cart', 'perfume']  
 
-# # class Cart(models.Model):
-# #     user = models.ForeignKey(User, on_delete=models.CASCADE)
-# #     created_at = models.DateTimeField(auto_now_add=True)
-
-# # class CartItem(models.Model):
-# #     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
-# #     variant = models.ForeignKey(PerfumeVariant, on_delete=models.CASCADE)
-
-# #     quantity = models.IntegerField(default=1)
-
-# #     def __str__(self):
-# #         return f"{self.variant} x {self.quantity}"
+    def __str__(self):
+        return f"{self.perfume.name} ({self.quantity})"
