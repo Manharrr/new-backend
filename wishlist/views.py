@@ -59,4 +59,4 @@ class DeleteWishlistItem(APIView):
             item.delete()
             return Response({"msg": "Deleted"})
         except WishlistItem.DoesNotExist:
-            return Response({"error": "Item not found"}, status=404)
+            return Response({"error": "Item not found......"}, status=404)

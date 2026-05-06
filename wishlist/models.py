@@ -16,7 +16,7 @@ class WishlistItem(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['wishlist', 'perfume']  # ✅ correct
+        unique_together = ['wishlist', 'perfume']  
 
     def __str__(self):
         return self.perfume.name
