@@ -37,7 +37,6 @@ class RegisterView(APIView):
         return Response({"message": "User registered. OTP sent"})
 
 
-# 🔹 LOGIN
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -46,10 +45,10 @@ class LoginView(APIView):
         user = User.objects.filter(email=email).first()
 
         if not user or not user.check_password(password):
-            return Response({"error": "Invalid credentials"}, status=401)
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.is_active:
-            return Response({"error": "Account not verified"}, status=403)
+            return Response({"error": "Account not verified"}, status=status.HTTP_403_FORBIDDEN)
 
         refresh = RefreshToken.for_user(user)
 
@@ -64,7 +63,7 @@ class LoginView(APIView):
         })
 
 
-# 🔹 LOGOUT
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -72,7 +71,7 @@ class LogoutView(APIView):
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
-            return Response({"error": "Refresh token required"}, status=400)
+            return Response({"error": "Refresh token required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             token = RefreshToken(refresh_token)
@@ -82,10 +81,10 @@ class LogoutView(APIView):
 
             return Response({"message": "Logged out"})
         except:
-            return Response({"error": "Invalid token"}, status=400)
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 🔹 AUTH ME
+
 class AuthMe(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -93,7 +92,7 @@ class AuthMe(APIView):
         return Response(UserSerializer(request.user).data)
 
 
-# 🔹 VERIFY OTP (REGISTER + FORGOT)
+#  reg+forgot
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
@@ -104,20 +103,20 @@ class VerifyOTPView(APIView):
 
         user = User.objects.filter(email=email).first()
         if not user:
-            return Response({"error": "User not found"}, status=404)
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         otp_obj = PasswordResetOTP.objects.filter(user=user).first()
         if not otp_obj:
-            return Response({"error": "OTP not found"}, status=400)
+            return Response({"error": "OTP not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         if otp_obj.is_expired():
             otp_obj.delete()
-            return Response({"error": "OTP expired"}, status=400)
+            return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
 
         if otp_obj.otp != otp:
             otp_obj.attempts += 1
             otp_obj.save()
-            return Response({"error": "Invalid OTP"}, status=400)
+            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
         otp_obj.is_verified = True
         otp_obj.save()
@@ -128,7 +127,6 @@ class VerifyOTPView(APIView):
         return Response({"message": "OTP verified"})
 
 
-# 🔹 FORGOT PASSWORD (SEND OTP)
 class ForgotPasswordView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -152,7 +150,6 @@ class ForgotPasswordView(APIView):
         return Response({"message": "OTP sent"})
 
 
-# 🔹 RESET PASSWORD
 class ResetPasswordView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
@@ -181,7 +178,6 @@ class ResetPasswordView(APIView):
         return Response({"message": "Password reset successful"})
 
 
-# 🔹 CHANGE PASSWORD (LOGGED IN)
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -192,29 +188,29 @@ class ChangePasswordView(APIView):
         new_password = request.data.get("new_password")
         confirm_password = request.data.get("confirm_password")
 
-        # 🔹 Check fields
+        
         if not old_password or not new_password or not confirm_password:
-            return Response({"error": "All fields are required"}, status=400)
+            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 🔹 Check old password
+        
         if not user.check_password(str(old_password)):
             return Response({"error": "Old password incorrect"}, status=400)
 
-        # 🔹 Match new passwords
+        
         if new_password != confirm_password:
             return Response({"error": "Passwords do not match"}, status=400)
 
-        # 🔹 Validate length
+        
         if len(new_password) < 6:
-            return Response({"error": "Password too short"}, status=400)
+            return Response({"error": "Password too short"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 🔹 Set new password
+        
         user.set_password(str(new_password))
         user.save()
 
         return Response({"message": "Password changed successfully"})
 
-# 🔹 PROFILE UPDATE
+
 class ProfileUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -224,11 +220,10 @@ class ProfileUpdateView(APIView):
         name = request.data.get("name")
         email = request.data.get("email")
 
-        # 🔹 Update name
+        
         if name:
             user.name = name
 
-        # 🔹 Update email (with check)
         if email:
             if User.objects.filter(email=email).exclude(id=user.id).exists():
                 return Response({"error": "Email already exists"}, status=400)

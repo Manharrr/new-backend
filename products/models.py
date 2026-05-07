@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+
 User = get_user_model()
 
 
@@ -29,12 +32,11 @@ class Perfume(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 
-    description = models.TextField()
+    description = models.TextField(null=True)
     image = models.ImageField(upload_to='perfumes/', null=True, blank=True)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField(default=0)    
-
+    stock = models.IntegerField(default=0,validators=[MinValueValidator(0)])    
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -46,7 +48,7 @@ class Review(models.Model):
     perfume = models.ForeignKey(Perfume, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    rating = models.IntegerField()
+    rating = models.IntegerField( validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

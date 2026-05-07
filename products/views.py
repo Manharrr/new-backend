@@ -4,12 +4,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import Brand, Category, Perfume, Review
-from .serializers import (
-    BrandSerializer,
-    CategorySerializer,
-    PerfumeSerializer,
-    ReviewSerializer
-)
+from .serializers import (BrandSerializer,CategorySerializer,PerfumeSerializer,ReviewSerializer)
+from django.db.models import Q
+
 
 class BrandListAPIView(APIView):
     def get(self, request):
@@ -50,18 +47,58 @@ class CategoryDetailAPIView(APIView):
 #         perfumes = Perfume.objects.all().select_related('brand', 'category').prefetch_related('reviews')
 #         serializer = PerfumeSerializer(perfumes, many=True)
 #         return Response(serializer.data, status=status.HTTP_200_OK)
+
 class PerfumeListAPIView(APIView):
     def get(self, request):
-        category = request.query_params.get('category')
-
         perfumes = Perfume.objects.all().select_related('brand', 'category').prefetch_related('reviews')
 
-        # 🔹 FILTER BY CATEGORY
+        # 🔹 CATEGORY FILTER
+        category = request.query_params.get('category')
         if category:
             perfumes = perfumes.filter(category__name__iexact=category)
 
+        # 🔹 SEARCH (name + description)
+        search = request.query_params.get("search")
+        if search:
+            perfumes = perfumes.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
+
+        # 🔹 PRICE FILTER
+        min_price = request.query_params.get("min_price")
+        max_price = request.query_params.get("max_price")
+
+        if min_price:
+            perfumes = perfumes.filter(price__gte=min_price)
+        if max_price:
+            perfumes = perfumes.filter(price__lte=max_price)
+
+        # 🔹 SORTING
+        sort = request.query_params.get("sort")
+
+        if sort == "asc":
+            perfumes = perfumes.order_by("price")
+        elif sort == "desc":
+            perfumes = perfumes.order_by("-price")
+        elif sort == "new":
+            perfumes = perfumes.order_by("-created_at")
+
         serializer = PerfumeSerializer(perfumes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# class PerfumeListAPIView(APIView):
+#     def get(self, request):
+#         category = request.query_params.get('category')
+
+#         perfumes = Perfume.objects.all().select_related('brand', 'category').prefetch_related('reviews')
+
+#         # 🔹 FILTER BY CATEGORY
+#         if category:
+#             perfumes = perfumes.filter(category__name__iexact=category)
+
+#         serializer = PerfumeSerializer(perfumes, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class PerfumeDetailAPIView(APIView):
     def get(self, request, pk):
