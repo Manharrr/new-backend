@@ -52,20 +52,16 @@ class PerfumeListAPIView(APIView):
     def get(self, request):
         perfumes = Perfume.objects.all().select_related('brand', 'category').prefetch_related('reviews')
 
-        # 🔹 CATEGORY FILTER
         category = request.query_params.get('category')
         if category:
             perfumes = perfumes.filter(category__name__iexact=category)
 
-        # 🔹 SEARCH (name + description)
+
         search = request.query_params.get("search")
         if search:
-            perfumes = perfumes.filter(
-                Q(name__icontains=search) |
-                Q(description__icontains=search)
-            )
+            perfumes = perfumes.filter( Q(name__icontains=search) | Q(description__icontains=search))
 
-        # 🔹 PRICE FILTER
+        
         min_price = request.query_params.get("min_price")
         max_price = request.query_params.get("max_price")
 
@@ -74,7 +70,7 @@ class PerfumeListAPIView(APIView):
         if max_price:
             perfumes = perfumes.filter(price__lte=max_price)
 
-        # 🔹 SORTING
+        
         sort = request.query_params.get("sort")
 
         if sort == "asc":
@@ -105,7 +101,7 @@ class PerfumeDetailAPIView(APIView):
         try:
             perfume = Perfume.objects.get(pk=pk)
         except Perfume.DoesNotExist:
-            return Response({"error": "Perfume not found"}, status=404)
+            return Response({"error": "Perfume not found"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = PerfumeSerializer(perfume)
         return Response(serializer.data, status=status.HTTP_200_OK)
