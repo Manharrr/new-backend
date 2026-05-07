@@ -83,18 +83,6 @@ class PerfumeListAPIView(APIView):
         serializer = PerfumeSerializer(perfumes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-# class PerfumeListAPIView(APIView):
-#     def get(self, request):
-#         category = request.query_params.get('category')
-
-#         perfumes = Perfume.objects.all().select_related('brand', 'category').prefetch_related('reviews')
-
-#         # 🔹 FILTER BY CATEGORY
-#         if category:
-#             perfumes = perfumes.filter(category__name__iexact=category)
-
-#         serializer = PerfumeSerializer(perfumes, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class PerfumeDetailAPIView(APIView):
     def get(self, request, pk):
