@@ -22,3 +22,5 @@ urlpatterns = [
     #  Change Password 
     path('change-password/', ChangePasswordView.as_view()),
 ]
+
+#resent otp cheyyanam
