@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'cart',
     'wishlist',
     'orders',
+    'payments',
+
 
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework.authtoken',
@@ -89,16 +91,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 
 DATABASES = {
@@ -192,3 +184,7 @@ EMAIL_HOST_PASSWORD = config("SMTP_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET')

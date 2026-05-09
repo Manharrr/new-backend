@@ -22,31 +22,15 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    # def create_superuser(self, email, password=None, **extra_fields):
-    #     extra_fields.setdefault('is_staff', True)
-    #     extra_fields.setdefault('is_superuser', True)
-    #     extra_fields.setdefault('role', 'admin')
-
-    #     return self.create_user(email, password, **extra_fields)
-
 
 class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=40)
     email = models.EmailField(unique=True)
-
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
-    # role = models.CharField(
-    #     max_length=10,
-    #     choices=[("admin", "Admin"), ("customer", "Customer")],
-    #     default="customer"
-    # )
-
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
     objects = UserManager()
 
     USERNAME_FIELD = "email"

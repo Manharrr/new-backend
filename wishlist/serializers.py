@@ -10,3 +10,12 @@ class WishlistItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishlistItem
         fields = ['id', 'perfume', 'product_name', 'product_price', 'product_image']
+
+    def validate(self, data):
+        wishlist = self.context['request'].user.wishlist
+        perfume = data.get('perfume')
+
+        if WishlistItem.objects.filter(wishlist=wishlist, perfume=perfume).exists():
+            raise serializers.ValidationError("Already in wishlist")
+
+        return data

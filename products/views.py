@@ -83,7 +83,7 @@ class PerfumeListAPIView(APIView):
         serializer = PerfumeSerializer(perfumes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    
+
 class PerfumeDetailAPIView(APIView):
     def get(self, request, pk):
         try:
@@ -97,8 +97,18 @@ class PerfumeDetailAPIView(APIView):
 class ReviewAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    # def get(self, request):
+    #     reviews = Review.objects.all()
+    #     serializer = ReviewSerializer(reviews, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
     def get(self, request):
+        perfume_id = request.query_params.get("perfume")
+
         reviews = Review.objects.all()
+
+        if perfume_id:
+            reviews = reviews.filter(perfume_id=perfume_id)
+
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

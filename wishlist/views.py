@@ -17,18 +17,18 @@ class AddToWishlist(APIView):
         perfume_id = request.data.get("perfume")
 
         if not perfume_id:
-            return Response({"error": "perfume is required"}, status=400)
+            return Response({"error": "perfume is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             perfume = Perfume.objects.get(id=perfume_id)
         except Perfume.DoesNotExist:
-            return Response({"error": "Perfume not found"}, status=404)
+            return Response({"error": "Perfume not found"}, status=status.HTTP_404_NOT_FOUND)
 
         wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
 
         item = WishlistItem.objects.filter(wishlist=wishlist, perfume=perfume).first()
 
-        #  Toggle behavior
+        #  Toggle 
         if item:
             item.delete()
             return Response({"msg": "Removed from wishlist"})

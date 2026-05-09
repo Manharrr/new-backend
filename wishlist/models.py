@@ -11,7 +11,7 @@ class Wishlist(models.Model):
         return f"{self.user}"
     
 class WishlistItem(models.Model):
-    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='items')
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='items') #wishlist.items.all()
     perfume = models.ForeignKey(Perfume, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 

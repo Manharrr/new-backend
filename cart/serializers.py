@@ -17,3 +17,18 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_subtotal(self, obj):
         return obj.perfume.price * obj.quantity
+    
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be greater than 0")
+        return value
+    
+    def validate(self, data):
+        perfume = data.get('perfume')
+        quantity = data.get('quantity')
+
+        if perfume and quantity:
+            if quantity > perfume.stock:
+                raise serializers.ValidationError("Quantity exceeds stock")
+
+        return data
