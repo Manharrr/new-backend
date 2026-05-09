@@ -40,6 +40,8 @@ class Perfume(models.Model):
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_deleted = models.BooleanField(default=False)
+
     def __str__(self):
         return self.name
 
