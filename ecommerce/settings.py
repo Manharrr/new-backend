@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'wishlist',
     'orders',
     'payments',
+    'adminpanel',
 
 
     'rest_framework_simplejwt.token_blacklist',
