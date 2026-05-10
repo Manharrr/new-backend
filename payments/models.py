@@ -1,4 +1,3 @@
-# payments/models.py
 
 from django.db import models
 from orders.models import Order
