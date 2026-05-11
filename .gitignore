@@ -5,3 +5,4 @@ db.sqlite3
 media/
 *.pyc
 git rm --cached .envgit rm --cached .env
+# myenv/

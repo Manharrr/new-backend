@@ -1,5 +1,3 @@
-# payments/views.py
-
 import razorpay
 
 from django.conf import settings
@@ -13,11 +11,7 @@ from cart.models import CartItem
 
 from .models import Payment
 
-from .serializers import (
-    PaymentSerializer,
-    CreatePaymentSerializer,
-    VerifyPaymentSerializer
-)
+from .serializers import ( PaymentSerializer, CreatePaymentSerializer, VerifyPaymentSerializer)
 
 
 class CreatePaymentView(APIView):
@@ -25,15 +19,8 @@ class CreatePaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-
-        serializer = CreatePaymentSerializer(
-            data=request.data
-        )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
-
+        serializer = CreatePaymentSerializer(data=request.data )
+        serializer.is_valid( raise_exception=True)
         order_id = serializer.validated_data[
             "order_id"
         ]
@@ -47,12 +34,7 @@ class CreatePaymentView(APIView):
 
         except Order.DoesNotExist:
 
-            return Response({
-
-                "error":
-                "Order not found"
-
-            }, status=404)
+            return Response({"error":"Order not found"}, status=404)
 
         
         if order.is_paid:
@@ -113,10 +95,7 @@ class CreatePaymentView(APIView):
 
         serializer = PaymentSerializer(payment)
 
-        return Response({
-
-            "payment":
-            serializer.data,
+        return Response({ "payment": serializer.data,
 
             "razorpay_order_id":
             razorpay_order["id"],
