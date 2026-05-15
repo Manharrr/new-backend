@@ -80,7 +80,7 @@ class PerfumeListAPIView(APIView):
         elif sort == "new":
             perfumes = perfumes.order_by("-created_at")
 
-        serializer = PerfumeSerializer(perfumes, many=True)
+        serializer = PerfumeSerializer(perfumes,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 

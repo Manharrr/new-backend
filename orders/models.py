@@ -30,7 +30,8 @@ class Order(models.Model):
     is_paid = models.BooleanField(default=False)
     razorpay_order_id = models.CharField(max_length=255,blank=True, null=True)
     razorpay_payment_id = models.CharField(max_length=255,blank=True, null=True)
-    
+    is_buy_now = models.BooleanField(default=False)
+
 
     
 

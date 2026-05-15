@@ -5,7 +5,7 @@ from django.db import transaction
 from decimal import Decimal
 
 from cart.models import CartItem
-from .models import Order, OrderItem,Perfume
+from .models import Order, OrderItem, Perfume
 from .serializers import OrderSerializer
 from rest_framework import status
 
@@ -21,17 +21,14 @@ class CreateOrderView(APIView):
 
         if not cart_items.exists():
             return Response({"error": "Cart is empty"}, status=400)
-        
-        payment_method = request.data.get(
-            "payment_method",
-            "COD"
-        )
 
+        payment_method = request.data.get("payment_method", "COD")
 
         order = Order.objects.create(
             user=user,
             address=request.data.get("address"),
-            payment_method=payment_method
+            payment_method=payment_method,
+            is_buy_now=False  # ✅ Cart checkout — is_buy_now False
         )
 
         total = Decimal("0.00")
@@ -49,9 +46,6 @@ class CreateOrderView(APIView):
             price = perfume.price
             total += price * qty
 
-            # perfume.stock -= qty
-            # perfume.save()
-
             OrderItem.objects.create(
                 order=order,
                 perfume=perfume,
@@ -59,24 +53,23 @@ class CreateOrderView(APIView):
                 price=price
             )
 
-        order.total_amount =  total
-        
-        if payment_method =="COD":
+        order.total_amount = total
 
+        if payment_method == "COD":
             for item in cart_items:
-                perfume=item.perfume
+                perfume = item.perfume
                 perfume.stock -= item.quantity
                 perfume.save()
-            
-            cart_items.delete()
-            order.status="PLACED"
-            order.is_paid= False
-        else:
-            order.status="PENDING"
-        order.save()
 
-        # order.status = "PENDING"
-        # order.save()
+            cart_items.delete()  # ✅ COD cart checkout — cart clear
+            order.status = "PLACED"
+            order.is_paid = False
+        else:
+            order.status = "PENDING"
+            # ✅ Online payment — cart clear cheyyilla ippol
+            # VerifyPaymentView-il clear cheyyum (is_buy_now=False aayathukondu)
+
+        order.save()
 
         return Response({
             "message": "Order placed successfully",
@@ -84,18 +77,13 @@ class CreateOrderView(APIView):
             "total": total
         })
 
-        
-        # cart_items.delete()
-
-        
-
 
 class OrderHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         orders = Order.objects.filter(user=request.user).order_by('-created_at')
-        serializer = OrderSerializer(orders, many=True)
+        serializer = OrderSerializer(orders, many=True, context={"request": request})
         return Response(serializer.data)
 
 
@@ -115,7 +103,7 @@ class CancelOrderView(APIView):
             return Response({"msg": "Order cancelled"})
         except Order.DoesNotExist:
             return Response({"error": "Not found"}, status=404)
-        
+
 
 class BuyNowOrderView(APIView):
     permission_classes = [IsAuthenticated]
@@ -132,7 +120,8 @@ class BuyNowOrderView(APIView):
         order = Order.objects.create(
             user=request.user,
             address=request.data.get("address"),
-            payment_method=request.data.get("payment_method", "COD")
+            payment_method=request.data.get("payment_method", "COD"),
+            is_buy_now=True  # ✅ Buy Now — is_buy_now True
         )
 
         total = perfume.price * quantity
@@ -144,7 +133,6 @@ class BuyNowOrderView(APIView):
             price=perfume.price
         )
 
-        
         perfume.stock -= quantity
         perfume.save()
 
@@ -156,4 +144,61 @@ class BuyNowOrderView(APIView):
             "message": "Buy Now order placed",
             "order_id": order.id
         })
-        
+
+class VerifyPaymentView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        order_id = request.data.get("order_id")
+
+        razorpay_order_id = request.data.get(
+            "razorpay_order_id"
+        )
+
+        razorpay_payment_id = request.data.get(
+            "razorpay_payment_id"
+        )
+
+        try:
+
+            order = Order.objects.get(
+                id=order_id,
+                user=request.user
+            )
+
+            order.razorpay_order_id = razorpay_order_id
+
+            order.razorpay_payment_id = (
+                razorpay_payment_id
+            )
+
+            order = payment.order
+
+            order.is_paid = True
+
+            order.status = "PLACED"
+
+            order.razorpay_order_id = data["razorpay_order_id"]
+
+            order.razorpay_payment_id = data["razorpay_payment_id"]
+
+            order.save()
+
+            # CART CLEAR
+            if not order.is_buy_now:
+
+                CartItem.objects.filter(
+                    cart__user=request.user
+                ).delete()
+
+            return Response({
+                "message": "Payment verified"
+            })
+
+        except Order.DoesNotExist:
+
+            return Response({
+                "error": "Order not found"
+            }, status=404)

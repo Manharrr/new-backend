@@ -3,13 +3,34 @@ from .models import Order, OrderItem
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.ReadOnlyField(source='perfume.name')
-    product_price = serializers.ReadOnlyField(source='perfume.price')
+
+    perfume_name = serializers.ReadOnlyField(
+        source='perfume.name'
+    )
+
+    perfume_image = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
-        fields = ['perfume', 'product_name', 'quantity', 'price', 'product_price']
 
+        fields = [
+            'perfume',
+            'perfume_name',
+            'perfume_image',
+            'quantity',
+            'price',
+        ]
+
+    def get_perfume_image(self, obj):
+
+        request = self.context.get("request")
+
+        if obj.perfume.image:
+            return request.build_absolute_uri(
+                obj.perfume.image.url
+            )
+
+        return None
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)

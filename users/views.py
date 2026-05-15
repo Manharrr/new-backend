@@ -10,12 +10,13 @@ from django.conf import settings
 
 from .models import UserToken, PasswordResetOTP
 from .serializers import RegisterSerializer,UserSerializer,VerifyOTPSerializer,ResetPasswordSerializer
-
+from rest_framework.permissions import AllowAny
 User = get_user_model()
 
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -30,7 +31,8 @@ class RegisterView(APIView):
         send_mail(
             subject="V Perfume - OTP Verification",
             message=f"Your OTP is {otp}",
-            from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+            # from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+            from_email=settings.EMAIL_HOST_USER,
             recipient_list=[user.email],
         )
 
@@ -38,6 +40,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get("email")
         password = str(request.data.get("password"))
@@ -143,39 +146,91 @@ class ForgotPasswordView(APIView):
         send_mail(
             subject="V Perfume - Reset Password",
             message=f"Your OTP is {otp}",
-            from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+            # from_email=f"V Perfume <{settings.EMAIL_HOST_USER}>",
+            from_email=settings.EMAIL_HOST_USER,
             recipient_list=[user.email],
         )
 
         return Response({"message": "OTP sent"})
 
 
+# class ResetPasswordView(APIView):
+#     def post(self, request):
+#         serializer = ResetPasswordSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         email = serializer.validated_data["email"]
+#         password = serializer.validated_data["password"]
+
+#         user = User.objects.filter(email=email).first()
+#         if not user:
+#             return Response({"error": "User not found"}, status=404)
+
+#         otp_obj = PasswordResetOTP.objects.filter(
+#             user=user,
+#             is_verified=True
+#         ).first()
+
+#         if not otp_obj:
+#             return Response({"error": "OTP not verified"}, status=400)
+
+#         user.set_password(password)
+#         user.save()
+
+#         otp_obj.delete()
+
+#         return Response({"message": "Password reset successful"})
+
 class ResetPasswordView(APIView):
+
     def post(self, request):
-        serializer = ResetPasswordSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+
+        serializer = ResetPasswordSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
 
         email = serializer.validated_data["email"]
+
         password = serializer.validated_data["password"]
 
-        user = User.objects.filter(email=email).first()
+        otp = request.data.get("otp")
+
+        user = User.objects.filter(
+            email=email
+        ).first()
+
         if not user:
-            return Response({"error": "User not found"}, status=404)
+
+            return Response(
+                {"error": "User not found"},
+                status=404
+            )
 
         otp_obj = PasswordResetOTP.objects.filter(
             user=user,
-            is_verified=True
+            otp=otp
         ).first()
 
         if not otp_obj:
-            return Response({"error": "OTP not verified"}, status=400)
+
+            return Response(
+                {"error": "Invalid OTP"},
+                status=400
+            )
 
         user.set_password(password)
+
         user.save()
 
         otp_obj.delete()
 
-        return Response({"message": "Password reset successful"})
+        return Response({
+            "message": "Password reset successful"
+        })
 
 
 class ChangePasswordView(APIView):
@@ -239,3 +294,29 @@ class ProfileUpdateView(APIView):
                 "email": user.email
             }
         })
+
+
+class VerifyEmailView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, token):
+
+        try:
+            user = User.objects.get(
+                email_verification_token=token
+            )
+
+            user.is_active = True
+            user.email_verification_token = ""
+            user.save()
+
+            return Response({
+                "message": "Email verified successfully"
+            })
+
+        except User.DoesNotExist:
+
+            return Response({
+                "error": "Invalid token"
+            }, status=400)

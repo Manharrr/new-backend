@@ -14,6 +14,9 @@ from .views import (
     DashboardRevenueView
 )
 
+# from django.conf import settings
+# from django.conf.urls.static import static
+
 urlpatterns = [
 
     path("users/", AllUserView.as_view()),
@@ -24,13 +27,21 @@ urlpatterns = [
     path("products/<int:pk>/", SingleProductView.as_view()),
     path("products/add/", AddProductView.as_view()),
     path("products/<int:pk>/edit/", EditProductView.as_view()),
-    path("products/<int:pk>/delete/", soft_delete_view),
+    path("products/<int:pk>/delete/", soft_delete_view.as_view()),
 
     path("orders/", AllOrdersView.as_view()),
     path("orders/<int:pk>/update/", UpdateOrderStatusView.as_view()),
 
     path("dashboard/", DashboardRevenueView.as_view()),
 ]
+
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
+
+
 # from django.urls import path
 # from .views import (
 #     AdminUserListView,
