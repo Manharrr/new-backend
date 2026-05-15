@@ -6,3 +6,5 @@ media/
 *.pyc
 git rm --cached .envgit rm --cached .env
 # myenv/
+media/
+staticfiles/

@@ -14,18 +14,11 @@ from django.contrib.auth import get_user_model
 from products.models import Perfume
 from orders.models import Order,OrderItem
 
-from .serializers import (
-    AdminUserSerializer,
-    AdminProductSerializer,
-    AdminOrderSerializer
+from .serializers import ( AdminUserSerializer, AdminProductSerializer, AdminOrderSerializer
 )
 
 User = get_user_model()
 
-
-# =========================
-# USERS
-# =========================
 
 class AllUserView(APIView):
 
