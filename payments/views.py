@@ -109,7 +109,7 @@ class VerifyPaymentView(APIView):
 
             order = payment.order
             order.is_paid = True
-            order.status = "PLACED"
+            order.status = "PLACED"   
             order.save()
 
             # Stock update

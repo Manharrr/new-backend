@@ -2,8 +2,8 @@ from django.urls import path
 
 from .views import (AllUserView, UserView, EditUserView,
     AllProductsView,SingleProductView,AddProductView,EditProductView,
-    soft_delete_view,
-    AllOrdersView,UpdateOrderStatusView,DashboardRevenueView
+    soft_delete_view,AllOrdersView,
+    UpdateOrderStatusView,DashboardRevenueView
 )
 
 urlpatterns = [
