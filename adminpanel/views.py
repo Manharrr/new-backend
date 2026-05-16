@@ -14,6 +14,8 @@ from django.contrib.auth import get_user_model
 from products.models import Perfume
 from orders.models import Order,OrderItem
 
+from django.db.models import Q
+
 from .serializers import ( AdminUserSerializer, AdminProductSerializer, AdminOrderSerializer
 )
 
@@ -84,10 +86,6 @@ class EditUserView(APIView):
         )
 
 
-# =========================
-# PRODUCTS
-# =========================
-
 class AllProductsView(APIView):
 
     permission_classes = [IsAdminUser]
@@ -95,6 +93,15 @@ class AllProductsView(APIView):
     def get(self, request):
 
         products = Perfume.objects.all()
+
+        search = request.query_params.get("search")
+
+        if search:
+
+            products = products.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
 
         serializer = AdminProductSerializer(
             products,
@@ -208,10 +215,6 @@ class soft_delete_view(APIView):
         )
 
 
-# =========================
-# ORDERS
-# =========================
-
 class AllOrdersView(APIView):
 
     permission_classes = [IsAdminUser]
@@ -256,10 +259,6 @@ class UpdateOrderStatusView(APIView):
             status=status.HTTP_200_OK
         )
 
-
-# =========================
-# DASHBOARD
-# =========================
 
 class DashboardRevenueView(APIView):
 
