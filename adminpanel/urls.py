@@ -1,21 +1,10 @@
 from django.urls import path
 
-from .views import (
-    AllUserView,
-    UserView,
-    EditUserView,
-    AllProductsView,
-    SingleProductView,
-    AddProductView,
-    EditProductView,
+from .views import (AllUserView, UserView, EditUserView,
+    AllProductsView,SingleProductView,AddProductView,EditProductView,
     soft_delete_view,
-    AllOrdersView,
-    UpdateOrderStatusView,
-    DashboardRevenueView
+    AllOrdersView,UpdateOrderStatusView,DashboardRevenueView
 )
-
-# from django.conf import settings
-# from django.conf.urls.static import static
 
 urlpatterns = [
 
@@ -35,32 +24,4 @@ urlpatterns = [
     path("dashboard/", DashboardRevenueView.as_view()),
 ]
 
-# if settings.DEBUG:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
-
-
-
-# from django.urls import path
-# from .views import (
-#     AdminUserListView,
-#     AdminProductListView,
-#     AdminProductCreateView,
-#     AdminProductUpdateView,
-#     AdminProductDeleteView,
-#     AdminOrderListView,
-#     AdminOrderUpdateView,
-# )
-
-# urlpatterns = [
-#     path("users/", AdminUserListView.as_view()),
-
-#     path("products/", AdminProductListView.as_view()),
-#     path("products/create/", AdminProductCreateView.as_view()),
-#     path("products/<int:product_id>/update/", AdminProductUpdateView.as_view()),
-#     path("products/<int:product_id>/delete/", AdminProductDeleteView.as_view()),
-
-#     path("orders/", AdminOrderListView.as_view()),
-#     path("orders/<int:order_id>/update/", AdminOrderUpdateView.as_view()),
-# ]

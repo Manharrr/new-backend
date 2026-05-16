@@ -28,7 +28,7 @@ class CreateOrderView(APIView):
             user=user,
             address=request.data.get("address"),
             payment_method=payment_method,
-            is_buy_now=False  # ✅ Cart checkout — is_buy_now False
+            is_buy_now=False  #  Cart checkout — is_buy_now False
         )
 
         total = Decimal("0.00")
@@ -61,12 +61,12 @@ class CreateOrderView(APIView):
                 perfume.stock -= item.quantity
                 perfume.save()
 
-            cart_items.delete()  # ✅ COD cart checkout — cart clear
+            cart_items.delete()  #  COD cart checkout — cart clear
             order.status = "PLACED"
             order.is_paid = False
         else:
             order.status = "PENDING"
-            # ✅ Online payment — cart clear cheyyilla ippol
+            #  Online payment — cart clear cheyyilla ippol
             # VerifyPaymentView-il clear cheyyum (is_buy_now=False aayathukondu)
 
         order.save()
@@ -121,7 +121,7 @@ class BuyNowOrderView(APIView):
             user=request.user,
             address=request.data.get("address"),
             payment_method=request.data.get("payment_method", "COD"),
-            is_buy_now=True  # ✅ Buy Now — is_buy_now True
+            is_buy_now=True  #  Buy Now — is_buy_now True
         )
 
         total = perfume.price * quantity
