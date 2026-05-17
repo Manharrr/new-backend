@@ -48,7 +48,6 @@ class UserView(APIView):
             status=status.HTTP_200_OK
         )
 
-
 class EditUserView(APIView):
 
     permission_classes = [IsAdminUser]
@@ -281,8 +280,3 @@ class DashboardRevenueView(APIView):
             "top_products": list(top_selling_products),
             "blocked_users":blocked_users.count()
         })
-
-
-
-
-
