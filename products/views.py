@@ -41,12 +41,7 @@ class CategoryDetailAPIView(APIView):
 
         serializer = CategorySerializer(category)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-# class PerfumeListAPIView(APIView):
-#     def get(self, request):
-#         perfumes = Perfume.objects.all().select_related('brand', 'category').prefetch_related('reviews')
-#         serializer = PerfumeSerializer(perfumes, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class PerfumeListAPIView(APIView):
     def get(self, request):
@@ -79,6 +74,12 @@ class PerfumeListAPIView(APIView):
             perfumes = perfumes.order_by("-price")
         elif sort == "new":
             perfumes = perfumes.order_by("-created_at")
+
+        elif sort == "a-z":
+            perfumes = perfumes.order_by("name")
+
+        elif sort == "z-a":
+            perfumes = perfumes.order_by("-name")
 
         serializer = PerfumeSerializer(perfumes,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -122,4 +123,5 @@ class ReviewAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
