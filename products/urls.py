@@ -6,7 +6,7 @@ from .views import (
     CategoryDetailAPIView,
     PerfumeListAPIView,
     PerfumeDetailAPIView,
-    ReviewAPIView
+    ReviewAPIView,
 )
 
 urlpatterns = [

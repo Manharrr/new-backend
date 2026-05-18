@@ -11,6 +11,11 @@ from django.conf import settings
 from .models import UserToken, PasswordResetOTP
 from .serializers import RegisterSerializer,UserSerializer,VerifyOTPSerializer,ResetPasswordSerializer
 from rest_framework.permissions import AllowAny
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+
 User = get_user_model()
 
 
@@ -320,3 +325,73 @@ class VerifyEmailView(APIView):
             return Response({
                 "error": "Invalid token"
             }, status=400)
+        
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class GoogleLoginAPIView(APIView):
+
+    permission_classes = []
+
+    def post(self, request):
+
+        token = request.data.get("token")
+
+        try:
+
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                requests.Request(),
+            )
+
+            email = idinfo["email"]
+            name = idinfo.get("name", "")
+
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    "name": name,
+                    "is_active": True,
+                    # "first_name": name,
+                }
+            )
+
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+
+                "user": {
+                    "email": user.email,
+                    "name": user.name,
+                }
+
+            })
+        
+        except Exception as e:
+
+            print("GOOGLE LOGIN ERROR:", e)
+
+            return Response(
+                {"error": str(e)},
+                status=400
+            )
+
+        # except Exception as e:
+
+        #     return Response(
+        #         {"error": str(e)},
+        #         status=400
+        #     )

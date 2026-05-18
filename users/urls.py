@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import ( RegisterView,LoginView,LogoutView,AuthMe,VerifyOTPView,ForgotPasswordView,ResetPasswordView,ChangePasswordView,ProfileUpdateView,VerifyEmailView
-)
+from .views import ( RegisterView,LoginView,
+                    LogoutView,AuthMe,VerifyOTPView,
+                    ForgotPasswordView,ResetPasswordView,ChangePasswordView,
+                    ProfileUpdateView,VerifyEmailView,GoogleLoginAPIView)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -19,5 +21,7 @@ urlpatterns = [
 
     path('change-password/', ChangePasswordView.as_view()),
     path("verify-email/<str:token>/",VerifyEmailView.as_view()),
+
+    path("google-login/", GoogleLoginAPIView.as_view()),
 ]
 

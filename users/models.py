@@ -40,6 +40,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # auth_provider = models.CharField(
+    # max_length=20,
+    # default="email" )
+
     
     objects = UserManager()
 
