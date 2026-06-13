@@ -389,9 +389,4 @@ class GoogleLoginAPIView(APIView):
                 status=400
             )
 
-        # except Exception as e:
-
-        #     return Response(
-        #         {"error": str(e)},
-        #         status=400
-        #     )
+     
