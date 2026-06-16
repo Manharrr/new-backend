@@ -1,0 +1,573 @@
+[
+{
+  "model": "products.brand",
+  "pk": 4,
+  "fields": {
+    "name": "Valentino"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 5,
+  "fields": {
+    "name": "Tom Ford"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 6,
+  "fields": {
+    "name": "Cristiano Ronaldo"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 7,
+  "fields": {
+    "name": "Kayan"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 8,
+  "fields": {
+    "name": "Oud Series"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 9,
+  "fields": {
+    "name": "Elite Oud"
+  }
+},
+{
+  "model": "products.brand",
+  "pk": 10,
+  "fields": {
+    "name": "Generic"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 4,
+  "fields": {
+    "name": "Men"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 5,
+  "fields": {
+    "name": "Women"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 6,
+  "fields": {
+    "name": "Exclusive"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 7,
+  "fields": {
+    "name": "men"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 8,
+  "fields": {
+    "name": "women"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 9,
+  "fields": {
+    "name": "exclusive"
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 4,
+  "fields": {
+    "name": "Dark Angel",
+    "brand": 4,
+    "category": 6,
+    "description": "A woody and spicy fragrance for men.",
+    "image": "perfumes/dark_angel_bvxrla",
+    "price": "8500.00",
+    "stock": 12,
+    "is_available": true,
+    "created_at": "2026-05-11T15:02:15.260Z",
+    "is_deleted": true
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 5,
+  "fields": {
+    "name": "Tom Ford Black Orchid",
+    "brand": 5,
+    "category": 5,
+    "description": "A luxurious and sensual fragrance of rich, dark accords.",
+    "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1000",
+    "price": "12000.00",
+    "stock": 10,
+    "is_available": true,
+    "created_at": "2026-05-11T15:02:15.266Z",
+    "is_deleted": true
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 7,
+  "fields": {
+    "name": "TomFord London",
+    "brand": 10,
+    "category": 6,
+    "description": "Tomford London is a sophisticated luxury fragrance infused with rich woody accords, warm spices, and smooth amber notes for a bold and timeless scent experience",
+    "image": "perfumes/download_22_joxtws",
+    "price": "8999.00",
+    "stock": 12,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.369Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 8,
+  "fields": {
+    "name": "Oud western",
+    "brand": 8,
+    "category": 7,
+    "description": "Oud is a rich and luxurious fragrance known for its deep woody aroma, warm smoky notes, and long-lasting elegance that creates a bold and sophisticated presence",
+    "image": "perfumes/download_21_hcsxtb",
+    "price": "1999.00",
+    "stock": 16,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.374Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 9,
+  "fields": {
+    "name": "Desire CR7",
+    "brand": 10,
+    "category": 7,
+    "description": "High quality perfume: desire",
+    "image": "perfumes/CR7_Perfume_photo_shoot_frpm32",
+    "price": "1500.00",
+    "stock": 8,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.377Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 10,
+  "fields": {
+    "name": "Park Avenue",
+    "brand": 9,
+    "category": 5,
+    "description": "Park Avenue Women is a graceful and refreshing fragrance blended with soft floral notes and smooth fruity accords for a confident and elegant everyday scent",
+    "image": "perfumes/download_20_ffsbkp",
+    "price": "2999.00",
+    "stock": 15,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.380Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 11,
+  "fields": {
+    "name": "Bella Vita",
+    "brand": 7,
+    "category": 5,
+    "description": "Bella Vita is a refreshing and elegant fragrance with smooth floral and woody notes, crafted for everyday luxury and lasting freshness.",
+    "image": "perfumes/download_19_yp1r3k",
+    "price": "1799.00",
+    "stock": 10,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.384Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 12,
+  "fields": {
+    "name": "Tomfo Wood",
+    "brand": 10,
+    "category": 6,
+    "description": "Tomfo Wood is a bold and sophisticated fragrance crafted with deep woody notes, warm spices, and smooth smoky accords. Designed for a refined and modern luxury experience, this long-lasting scent delivers elegance, confidence, and a rich masculine character perfect for special occasions",
+    "image": "perfumes/download_18_bogfto",
+    "price": "4298.00",
+    "stock": 22,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.387Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 13,
+  "fields": {
+    "name": "Black Smoke",
+    "brand": 10,
+    "category": 7,
+    "description": "High quality black smoke perfume",
+    "image": "perfumes/Dolce__Gabbana_The_One_Gold_for_Men_-_Eau_de_Parfum_Intense_zov4ih",
+    "price": "1500.00",
+    "stock": 12,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.390Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 14,
+  "fields": {
+    "name": "nevo Men",
+    "brand": 5,
+    "category": 6,
+    "description": "High quality perfume nevo perfume for men",
+    "image": "perfumes/exclusive_nevo_lbdsdm",
+    "price": "6999.00",
+    "stock": 17,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.393Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 15,
+  "fields": {
+    "name": "Women Desire",
+    "brand": 10,
+    "category": 5,
+    "description": "High quality perfume women daily use perfume",
+    "image": "perfumes/desire_ntw5k1",
+    "price": "1299.00",
+    "stock": 18,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.397Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 16,
+  "fields": {
+    "name": "Luxury OUD",
+    "brand": 8,
+    "category": 6,
+    "description": "A luxurious oud fragrance blended with intense woody accords, smoky amber, and refined oriental spices. Crafted for a bold and elegant presence, this exclusive scent delivers a rich, long-lasting aroma that reflects sophistication, power, and timeless luxury",
+    "image": "perfumes/exclusive_ood_luxury_xzezvn",
+    "price": "19999.00",
+    "stock": 10,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.400Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 17,
+  "fields": {
+    "name": "Pink Rose",
+    "brand": 4,
+    "category": 5,
+    "description": "High quality perfume rose perfume for women",
+    "image": "perfumes/rose_women_wxcgxh",
+    "price": "1898.00",
+    "stock": 18,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.404Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 18,
+  "fields": {
+    "name": "Ruby green",
+    "brand": 9,
+    "category": 6,
+    "description": "Ruby Green Elite Oud is an exclusive luxury fragrance crafted with rich oud, fresh green accords, warm spices, and smooth woody notes. Its deep and sophisticated aroma delivers a bold, long-lasting scent designed for those who appreciate elegance, prestige, and timeless luxury",
+    "image": "perfumes/ruby_exclusive_y5wtuz",
+    "price": "27777.00",
+    "stock": 6,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.407Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 19,
+  "fields": {
+    "name": "download (6)",
+    "brand": 4,
+    "category": 7,
+    "description": "sauvage dior premimum for men",
+    "image": "perfumes/sauvage_dior_dabvtk",
+    "price": "1999.00",
+    "stock": 16,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.410Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 20,
+  "fields": {
+    "name": "Blue",
+    "brand": 4,
+    "category": 6,
+    "description": "An exclusive blue fragrance crafted with refreshing aquatic notes, vibrant citrus accords, and a smooth woody finish. Designed for modern elegance, this perfume delivers a clean, confident, and long-lasting scent perfect for every occasion",
+    "image": "perfumes/blue_esxclusive_stbuv1",
+    "price": "9999.99",
+    "stock": 4,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.412Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 21,
+  "fields": {
+    "name": "Valentino  Women",
+    "brand": 9,
+    "category": 5,
+    "description": "High quality perfume come in elite oud series  mainly for women category",
+    "image": "perfumes/valentiono_women_kxqz3u",
+    "price": "2999.00",
+    "stock": 20,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.416Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 22,
+  "fields": {
+    "name": "women luxury xx",
+    "brand": 10,
+    "category": 6,
+    "description": "Veloura Exclusive is a symbol of timeless luxury and refined sophistication. Crafted with rare floral essences, rich amber, smooth vanilla, and deep woody accords, this premium fragrance delivers an unforgettable scent experience. Designed for those who embrace elegance and prestige, its long-lasting aroma leaves a bold and luxurious impression wherever you go.",
+    "image": "perfumes/women_party_qjq3vr",
+    "price": "12999.00",
+    "stock": 7,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.419Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 23,
+  "fields": {
+    "name": "Foto men",
+    "brand": 4,
+    "category": 7,
+    "description": "High quality perfume Foto Product for men",
+    "image": "perfumes/homem_exclusive_tniiqk",
+    "price": "999.00",
+    "stock": 8,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.422Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 24,
+  "fields": {
+    "name": "KAYAN – The Essence of Refined Strength 🌺🔥",
+    "brand": 7,
+    "category": 5,
+    "description": "High quality perfume KAYAN – The Essence of Refined Strength exclusive daily perfume for women",
+    "image": "perfumes/kalyan_women_mnrzyu",
+    "price": "1999.00",
+    "stock": 22,
+    "is_available": true,
+    "created_at": "2026-05-12T07:33:33.426Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 25,
+  "fields": {
+    "name": "Luxury Oud Perfume",
+    "brand": 9,
+    "category": 7,
+    "description": "High quality perfume: Luxury Oud Perfume Bottle – Timeless Elegance & Rich Aroma",
+    "image": "perfumes/men_ood_lux_ggp5sk",
+    "price": "2499.00",
+    "stock": 10,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.193Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 26,
+  "fields": {
+    "name": "Quiet Luxury men",
+    "brand": 5,
+    "category": 7,
+    "description": "High quality perfume Quiet Luxury Blazer Outfit Formulas for men",
+    "image": "perfumes/v-perfume_exclusive_ik5sve",
+    "price": "1500.00",
+    "stock": 9,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.197Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 27,
+  "fields": {
+    "name": "Rose Petal vintage",
+    "brand": 7,
+    "category": 5,
+    "description": "High quality perfume   Rose Petal Elixir vintage perfume for all season",
+    "image": "perfumes/women_vintage_jgip07",
+    "price": "2999.00",
+    "stock": 11,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.200Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 28,
+  "fields": {
+    "name": "Creed",
+    "brand": 5,
+    "category": 7,
+    "description": "High quality perfume for men  in summer",
+    "image": "perfumes/creedv_men_irwkry",
+    "price": "1500.00",
+    "stock": 22,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.203Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 29,
+  "fields": {
+    "name": "Valentino",
+    "brand": 4,
+    "category": 6,
+    "description": "A luxurious and exclusive Valentino fragrance that blends rich floral accords, warm amber notes, and smooth woody undertones. Crafted for elegance and sophistication, this long-lasting perfume delivers a bold yet refined scent that leaves a memorable impression for every special occasion",
+    "image": "perfumes/Valentino_w2glbs",
+    "price": "7777.00",
+    "stock": 10,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.206Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 30,
+  "fields": {
+    "name": "Vintage dark MN luxury",
+    "brand": 10,
+    "category": 7,
+    "description": "High quality perfume Vintage dark luxury perfume",
+    "image": "perfumes/men_normal_upazih",
+    "price": "1500.00",
+    "stock": 8,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.209Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 31,
+  "fields": {
+    "name": "wildberries oudh",
+    "brand": 10,
+    "category": 7,
+    "description": "High quality perfume for men come in ooud  category",
+    "image": "perfumes/exclusive_ood_mfm1yd",
+    "price": "1500.00",
+    "stock": 4,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.213Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 32,
+  "fields": {
+    "name": "Oud Gaxx",
+    "brand": 10,
+    "category": 5,
+    "description": "High quality perfume summer",
+    "image": "perfumes/women_ood_hwfupg",
+    "price": "1500.00",
+    "stock": 6,
+    "is_available": true,
+    "created_at": "2026-05-12T07:38:47.216Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 34,
+  "fields": {
+    "name": "Dior Sauvage",
+    "brand": 5,
+    "category": 4,
+    "description": "Daily wear products",
+    "image": "perfumes/dior_savage_men_be6hov",
+    "price": "4999.00",
+    "stock": 4,
+    "is_available": false,
+    "created_at": "2026-05-12T11:00:01.750Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "products.perfume",
+  "pk": 35,
+  "fields": {
+    "name": "Vintage",
+    "brand": 10,
+    "category": 4,
+    "description": "A timeless vintage fragrance with rich woody notes, warm spices, and a touch of classic elegance. Crafted for those who appreciate sophistication and old-world charmm",
+    "image": "perfumes/vintage_vtlegi",
+    "price": "1999.99",
+    "stock": 5,
+    "is_available": false,
+    "created_at": "2026-05-13T05:10:19.936Z",
+    "is_deleted": false
+  }
+}
+]
